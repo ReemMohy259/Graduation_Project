@@ -1,0 +1,29 @@
+import java.util.Arrays;
+
+public class RequestHandlerTest {
+    public static void main(String[] args) {
+        // Set static values (These values apply to all instances)
+        RequestHandler.setMessageType(A_MType.DIAGNOSTICS);  // Assuming A_MType is an enum
+        RequestHandler.setSourceAddress((short) 0x1234);
+        RequestHandler.setTargetAddress((short) 0x5678);
+        RequestHandler.setTargetAddressType(A_TA_Type.PHYSICAL); // Assuming A_TA_Type is an enum
+
+        // Case 1: Request without data
+        RequestHandler request1 = new RequestHandler((byte) 0x10, (byte) 0x01, false);
+        byte[] payload1 = request1.getPayload();
+        System.out.println("Payload (No Data): " + payload1);
+
+        // Case 2: Request with data
+        byte[] testData = {0x11, 0x22, 0x33, 0x44};
+        RequestHandler request2 = new RequestHandler((byte) 0x20, (byte) 0x02, true, testData);
+        byte[] payload2 = request2.getPayload();
+        System.out.println("Payload (With Data): " + Arrays.toString(payload2));
+
+        // Case 3: Request with remote address (A_AE)
+        short[] remoteAddresses = {0x1234, 0x5678};
+        RequestHandler.setRemoteAddress(remoteAddresses);
+        RequestHandler request3 = new RequestHandler((byte) 0x30, (byte) 0x03, false);
+        byte[] payload3 = request3.getPayload();
+        System.out.println("Payload (With Remote Address): " + Arrays.toString(payload3));
+    }
+}

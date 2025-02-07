@@ -1,0 +1,5 @@
+package com.diagnostic.core;
+
+public enum Important_Enums {
+
+}

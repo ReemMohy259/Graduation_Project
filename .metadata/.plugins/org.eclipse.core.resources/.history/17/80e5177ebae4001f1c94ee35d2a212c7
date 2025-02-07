@@ -1,0 +1,19 @@
+
+
+public enum ImportantEnums {
+
+}
+
+enum A_MType{
+	DIAGNOSTICS(0),
+	REMOTE_DIAGNOSTICS(1) ;
+
+	A_MType(int i) {
+		// TODO Auto-generated constructor stub
+	}	
+}
+
+enum A_TA_Type{
+	PHYSICAL ,
+	FUNCTIONAL ;	
+}

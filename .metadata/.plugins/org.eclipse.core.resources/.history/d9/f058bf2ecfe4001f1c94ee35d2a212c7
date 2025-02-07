@@ -1,0 +1,56 @@
+package com.diagnostic.core;
+
+public enum ImportantEnums {
+
+}
+
+enum A_MType {
+    DIAGNOSTICS		  ((byte) 0x00),
+    REMOTE_DIAGNOSTICS((byte) 0x01);
+
+    private final byte value;
+
+    // Constructor to assign byte values
+    A_MType(byte value) {
+        this.value = value;
+    }
+
+    // Getter to retrieve the byte value
+    public byte getValue() {
+        return value;
+    }
+
+    // Method to convert a byte value into the corresponding enum constant
+    public static A_MType fromValue(byte value) {
+        for (A_MType type : A_MType.values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Invalid A_MType value: " + value);
+    }
+}
+
+enum A_TA_Type {
+	PHYSICAL  ((byte) 0x00),
+	FUNCTIONAL((byte) 0x01);
+
+    private final byte value;
+
+    A_TA_Type(byte value) {
+        this.value = value;
+    }
+
+    public byte getValue() {
+        return value;
+    }
+
+    public static A_TA_Type fromValue(byte value) {
+        for (A_TA_Type type : A_TA_Type.values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Invalid A_TA_Type value: " + value);
+    }
+}

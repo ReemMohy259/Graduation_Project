@@ -1,0 +1,33 @@
+package com.diagnostic.core;
+import com.diagnostic.core.A_MType.java;
+
+public class Request {
+	A_MType reem = REMOTE_DIAGNOSTICS;
+    private final int service;
+    private final int subfunction;
+    private final boolean suppressPositiveResponse;
+    private final byte[] data;
+
+    public Request(BaseService service, int subfunction, boolean suppressPositiveResponse, byte[] data) {
+        this.service = service;
+        this.subfunction = subfunction;
+        this.suppressPositiveResponse = suppressPositiveResponse;
+        this.data = data.clone();
+    }
+
+    public BaseService getService(){
+    	return service;
+    }
+    
+    public int getSubfunction() {
+        return subfunction;
+    }
+    
+    public boolean getSuppressPositiveResponse() {
+    	return suppressPositiveResponse;
+    }
+    
+    public byte[] getData() {
+        return data.clone();
+    }
+}

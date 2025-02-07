@@ -1,0 +1,32 @@
+package com.diagnostic.services.ECUReset;
+
+import com.diagnostic.core.*;
+
+public class ECUReset extends BaseService {
+	@Override
+	public RequestHandler makeRequest(Object... args) {
+		if (args.length < 1 || !(args[0] instanceof Integer)) {
+			throw new IllegalArgumentException("Reset type must be provided as an integer");
+		}
+
+		int resetType = (Integer) args[0];
+		return new RequestHandler(this, resetType, false, new byte[0]);
+	}
+
+	@Override
+	public InterpretedResponse interpretResponse(Response response) {
+		byte[] responseData = response.getData();
+		if (responseData.length < 2) {
+			throw new IllegalArgumentException("Invalid response data length");
+		}
+
+		int resetTypeEcho = responseData[0] & 0xFF;
+		int powerdownTime = responseData[1] & 0xFF;
+
+		ECUReset_ResponseData resetData = new ECUReset_ResponseData(resetTypeEcho, powerdownTime);
+
+		InterpretedResponse interpretedResponse = new InterpretedResponse();
+		interpretedResponse.setServiceData(resetData);
+		return interpretedResponse;
+	}
+}

@@ -1,0 +1,85 @@
+package com.diagnostic.core;
+import  com.diagnostic.core.ImportantEnums;
+import java.util.Arrays;
+import java.util.EnumSet;
+
+/**
+ * This class represents a UDS response packet (ISO 14229-1).
+ * It provides methods to parse a response from raw bytes.
+ */
+public class ResponseHandler {
+
+    /******************************* Data Members ****************************/
+    private A_MType messageType;         // Addressing Mode Type (Enum)
+    private short A_SA;                  // Source Address (ECU Address)
+    private short A_TA;                  // Target Address (Tester Address)
+    private A_TA_Type targetAddressType; // Target Address Type (Enum)
+    private int A_Length;                // Data Length (excluding headers)
+    private byte SID;                     // Service ID (UDS)
+    private byte SF;                      // Subfunction (if applicable)
+    private byte[] A_Data = null;         // Response Parameters
+
+    /******************************* Constructor ****************************/
+    public ResponseHandler(A_MType messageType, short sourceAddress, short targetAddress,
+                           A_TA_Type targetAddressType, int length, byte serviceId, byte[] responseData) {
+        this.messageType = messageType;
+        this.A_SA = sourceAddress;
+        this.A_TA = targetAddress;
+        this.targetAddressType = targetAddressType;
+        this.A_Length = length;
+        this.SID = serviceId;
+
+        if (responseData != null) {
+            this.A_Data = responseData.clone();
+        }
+    }
+
+    /******************************* Getters *********************************/
+    public byte getServiceId() { return SID; }
+    public short getSourceAddress() { return A_SA; }
+    public short getTargetAddress() { return A_TA; }
+    public A_TA_Type getTargetAddressType() { return targetAddressType; }
+    public int getDataLength() { return A_Length; }
+    public byte[] getData() { return (A_Data != null) ? A_Data.clone() : null; }
+
+    /******************************* Parsing Method ****************************/
+    /**
+     * Parses a raw UDS response byte array and creates a ResponseHandler object.
+     *
+     * @param payload Raw UDS response packet in bytes.
+     * @return ResponseHandler instance representing the response.
+     */
+    public static ResponseHandler fromPayload(byte[] payload) {
+        if (payload == null || payload.length < 8) {
+            throw new IllegalArgumentException("Invalid payload: Too short to be a valid UDS response.");
+        }
+
+        int index = 0;
+
+        // Extract messageType (Assume enum uses byte values)
+        A_MType messageType = A_MType.fromValue(payload[index++]);
+
+        // Extract A_SA (Source Address, ECU Address, 2 bytes)
+        short sourceAddress = (short) ((payload[index++] << 8) | (payload[index++] & 0xFF));
+
+        // Extract A_TA (Target Address, Tester Address, 2 bytes)
+        short targetAddress = (short) ((payload[index++] << 8) | (payload[index++] & 0xFF));
+
+        // Extract targetAddressType (Assume enum uses byte values)
+        A_TA_Type targetAddressType = A_TA_Type.fromValue(payload[index++]);
+
+        // Extract A_Length (4 bytes)
+        int length = ((payload[index++] & 0xFF) << 24) |
+                     ((payload[index++] & 0xFF) << 16) |
+                     ((payload[index++] & 0xFF) << 8) |
+                     (payload[index++] & 0xFF);
+
+        // Extract SID (Service ID, 1 byte)
+        byte serviceId = payload[index++];
+
+        // Extract remaining data (if available)
+        byte[] responseData = (index < payload.length) ? Arrays.copyOfRange(payload, index, payload.length) : null;
+
+        // Create and return the ResponseHandler object
+        return new ResponseHandler(messageType, sourceAddress, targetAddress, targetAddressType, length, serviceId, responseData);
+    }

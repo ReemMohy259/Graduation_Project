@@ -1,0 +1,5 @@
+package application.layer.core;
+
+public enum A_TA_Type {
+
+}

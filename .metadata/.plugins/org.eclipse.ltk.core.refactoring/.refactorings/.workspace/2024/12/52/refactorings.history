@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Delete resource &apos;UDS_Architecture&apos;" deleteContents="true" description="Delete resource &apos;UDS_Architecture&apos;" element1="/UDS_Architecture" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1735418469997"/>&#x0A;<refactoring comment="Delete resource &apos;UDS_architecture&apos;" deleteContents="true" description="Delete resource &apos;UDS_architecture&apos;" element1="/UDS_architecture" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1735418751885"/>
+</session>

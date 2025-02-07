@@ -1,0 +1,56 @@
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class requestunittest {
+
+    @BeforeEach
+    void setup() {
+        // Initialize static members
+        RequestHandler.setMessageType(A_MType.DIAGNOSTICS);
+        RequestHandler.setSourceAddress((short) 0x1234);
+        RequestHandler.setTargetAddress((short) 0x5678);
+        RequestHandler.setTargetAddressType(A_TA_Type.PHYSICAL);
+    }
+
+    @Test
+    void testPayload_NoData() {
+        RequestHandler request = new RequestHandler((byte) 0x10, (byte) 0x01, false);
+        byte[] expectedPayload = {
+            0x00, 0x12, 0x34, 0x56, 0x78,0x00,  // Header
+            0x00, 0x00, 0x00, 0x02,  // Length (2 bytes)
+            0x10, 0x01  // SID, SF
+        };
+
+        assertArrayEquals(expectedPayload, request.getPayload(), "Payload without data should match expected structure.");
+    }
+
+    @Test
+    void testPayload_WithData() {
+        byte[] testData = {0x11, 0x22, 0x33, 0x44};
+        RequestHandler request = new RequestHandler((byte) 0x20, (byte) 0x02, true, testData);
+        byte[] expectedPayload = {
+            0x00, 0x12, 0x34, 0x56, 0x78,0x00,  // Header
+            0x00, 0x00, 0x00, 0x06,  // Length (6 bytes)
+            0x20, (byte) 0x82,  // SID, SF (with suppression bit)
+            0x11, 0x22, 0x33, 0x44  // Data
+        };
+
+        assertArrayEquals(expectedPayload, request.getPayload(), "Payload with data should match expected structure.");
+    }
+
+    @Test
+    void testPayload_WithRemoteAddress() {
+        short[] remoteAddresses = {0x1234, 0x5678};
+        RequestHandler.setRemoteAddress(remoteAddresses);
+        RequestHandler request = new RequestHandler((byte) 0x30, (byte) 0x03, false);
+        byte[] expectedPayload = {
+            0x00, 0x12, 0x34, 0x56, 0x78,0x00,  // Header
+            0x12, 0x34, 0x56, 0x78,  // Remote Addresses
+            0x00, 0x00, 0x00, 0x02,  // Length (2 bytes)
+            0x30, 0x03  // SID, SF
+        };
+
+        assertArrayEquals(expectedPayload, request.getPayload(), "Payload with remote address should match expected structure.");
+    }
+}

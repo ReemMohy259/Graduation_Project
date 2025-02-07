@@ -1,0 +1,55 @@
+!SESSION 2025-02-07 04:57:19.133 -----------------------------------------------
+eclipse.buildId=4.30.0.20231201-1200
+java.version=17.0.9
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.java.product
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -product org.eclipse.epp.package.java.product
+
+This is a continuation of log file D:\Eng. Reem\Graduation\UDS\Code_Karim\UDS_phase1\UDS\.metadata\.bak_0.log
+Created Time: 2025-02-07 04:57:25.349
+
+!ENTRY ch.qos.logback.classic 1 0 2025-02-07 04:57:25.351
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2025-02-07 04:57:25.600
+!MESSAGE Logback config file: D:\Eng. Reem\Graduation\UDS\Code_Karim\UDS_phase1\UDS\.metadata\.plugins\org.eclipse.m2e.logback\logback.2.2.1.20231030-1438.xml
+
+!ENTRY org.eclipse.jface 2 0 2025-02-07 04:57:27.501
+!MESSAGE Keybinding conflicts occurred.  They may interfere with normal accelerator operation.
+!SUBENTRY 1 org.eclipse.jface 2 0 2025-02-07 04:57:27.501
+!MESSAGE A conflict occurred for CTRL+SHIFT+T:
+Binding(CTRL+SHIFT+T,
+	ParameterizedCommand(Command(org.eclipse.jdt.ui.navigate.open.type,Open Type,
+		Open a type in a Java editor,
+		Category(org.eclipse.ui.category.navigate,Navigate,null,true),
+		WorkbenchHandlerServiceHandler("org.eclipse.jdt.ui.navigate.open.type"),
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.contexts.window,,,system)
+Binding(CTRL+SHIFT+T,
+	ParameterizedCommand(Command(org.eclipse.lsp4e.symbolinworkspace,Go to Symbol in Workspace,
+		,
+		Category(org.eclipse.lsp4e.category,Language Servers,null,true),
+		WorkbenchHandlerServiceHandler("org.eclipse.lsp4e.symbolinworkspace"),
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.contexts.window,,,system)
+
+!ENTRY org.eclipse.jdt.junit.core 4 0 2025-02-07 04:57:32.327
+!MESSAGE Unable to compute bundle location for 'org.hamcrest' with range [2.2.0,2.3.0)
+!STACK 0
+java.lang.IllegalStateException: Unable to compute bundle location for 'org.hamcrest' with range [2.2.0,2.3.0)
+	at org.eclipse.jdt.internal.junit.buildpath.BuildPathSupport$JUnitPluginDescription.getLibraryEntry(BuildPathSupport.java:236)
+	at org.eclipse.jdt.internal.junit.buildpath.BuildPathSupport.getHamcrestLibraryEntry(BuildPathSupport.java:435)
+	at org.eclipse.jdt.internal.junit.buildpath.JUnitContainerInitializer.getNewContainer(JUnitContainerInitializer.java:147)
+	at org.eclipse.jdt.internal.junit.buildpath.JUnitContainerInitializer.initialize(JUnitContainerInitializer.java:108)
+	at org.eclipse.jdt.internal.core.JavaModelManager.initializeContainer(JavaModelManager.java:3216)
+	at org.eclipse.jdt.internal.core.JavaModelManager$10.run(JavaModelManager.java:3100)
+	at org.eclipse.core.internal.resources.Workspace.run(Workspace.java:2453)
+	at org.eclipse.core.internal.resources.Workspace.run(Workspace.java:2478)
+	at org.eclipse.jdt.internal.core.JavaModelManager.initializeAllContainers(JavaModelManager.java:3162)
+	at org.eclipse.jdt.internal.core.JavaModelManager.getClasspathContainer(JavaModelManager.java:2159)
+	at org.eclipse.jdt.core.JavaCore.initializeAfterLoad(JavaCore.java:4616)
+	at org.eclipse.jdt.internal.ui.InitializeAfterLoadJob$RealJob.run(InitializeAfterLoadJob.java:39)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)

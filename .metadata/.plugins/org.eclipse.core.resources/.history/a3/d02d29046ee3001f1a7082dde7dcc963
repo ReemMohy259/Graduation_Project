@@ -1,0 +1,65 @@
+package com.diagnostic.core;
+import com.diagnostic.core.Important_Enums;
+
+public class Request {
+
+	// Data-Members 
+	static A_MType message_type;	// Enum
+	static short A_SA;			    // 2-Bytes
+	static short A_TA;
+	static A_TA_Type target_address_type;	
+	static  short[] A_AE = null;		// Optional
+
+	private int A_Length;				// Length of the data (excluding the header and length field)
+
+	private byte SID;
+	private byte subfunction;
+	private boolean suppressPositiveResponse;
+	private byte[] A_Data;
+
+	// Methods
+	public Request(byte service, byte subfunction, boolean suppressPositiveResponse) {
+		this.SID = service;
+		this.subfunction = subfunction;
+		this.suppressPositiveResponse = suppressPositiveResponse;
+
+		if (suppressPositiveResponse == true)
+		{
+			subfunction |= 0x80;
+		}
+		else
+		{
+			subfunction &= ~0x80;
+		}
+
+		this.A_Data = null;
+
+		this.A_Length = 2;    // SID(1 Byte) + SF(1 Byte)
+	}
+
+	public Request(byte service, byte subfunction, boolean suppressPositiveResponse, byte[] Original_Data) {
+
+		this(service, subfunction, suppressPositiveResponse);
+		this.A_Data = Original_Data.clone();
+
+		this.A_Length = 2 + A_Data.length;
+	}
+
+
+
+	public byte getService(){
+		return SID;
+	}
+
+	public byte getSubfunction(){
+		return subfunction;
+	}
+
+	public boolean getSuppressPositiveResponse() {
+		return suppressPositiveResponse;
+	}
+
+	public byte[] getData() {
+		return A_Data.clone();
+	}
+}

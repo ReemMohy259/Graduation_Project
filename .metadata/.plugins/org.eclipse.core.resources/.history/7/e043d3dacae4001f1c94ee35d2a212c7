@@ -1,0 +1,118 @@
+package com.diagnostic.core;
+
+import java.util.Arrays;
+
+public class Response {
+
+    /******************************* Data Members ****************************/
+    private static A_MType messageType;  // Enum: Message Type
+    private static short A_SA;           // Source Address (2 Bytes)
+    private static short A_TA;           // Target Address (2 Bytes)
+    private static A_TA_Type targetAddressType; // Target Address Type Enum
+    private static short[] A_AE = null;  // Optional Address Extension
+    private byte SID;                    // Service ID (1 Byte)
+    private byte SF;                     // Subfunction (1 Byte)
+    private byte[] A_Data = null;        // Additional Data (Optional)
+    private int A_Length;                // Data Length (4 Bytes)
+
+    /******************************* Constructor ****************************/
+    public Response(A_MType messageType, short A_SA, short A_TA, A_TA_Type targetAddressType,
+                    short[] A_AE, byte SID, byte SF, byte[] A_Data, int A_Length) {
+        Response.messageType = messageType;
+        Response.A_SA = A_SA;
+        Response.A_TA = A_TA;
+        Response.targetAddressType = targetAddressType;
+        Response.A_AE = (A_AE != null) ? A_AE.clone() : null;
+        this.SID = SID;
+        this.SF = SF;
+        this.A_Data = (A_Data != null) ? A_Data.clone() : null;
+        this.A_Length = A_Length;
+    }
+
+    /******************************* Getters ****************************/
+    public A_MType getMessageType() { return messageType; }
+    public short getSourceAddress() { return A_SA; }
+    public short getTargetAddress() { return A_TA; }
+    public A_TA_Type getTargetAddressType() { return targetAddressType; }
+    public short[] getAddressExtension() { return (A_AE != null) ? A_AE.clone() : null; }
+    public byte getServiceId() { return SID; }
+    public byte getSubFunction() { return SF; }
+    public byte[] getData() { return (A_Data != null) ? A_Data.clone() : null; }
+    public int getDataLength() { return A_Length; }
+
+    /******************************* Parsing Method ****************************/
+    /*
+     * Parses a raw UDS response payload (byte array) and creates a Response object.
+     *
+     * @param payload Raw response bytes.
+     * @return Parsed Response object.
+     */
+    public static Response fromPayload(byte[] payload) {
+        if (payload == null || payload.length < 7) { // Minimum required length
+            throw new IllegalArgumentException("Invalid payload: Too short to be a valid response.");
+        }
+
+        int index = 0;
+
+        // 1. Extract messageType (Assumes A_MType enum has a fromValue() method)
+        messageType = A_MType.fromValue(payload[index++]);
+
+        // 2. Extract A_SA (Source Address - 2 Bytes)
+        A_SA = (short) ((payload[index++] << 8) | (payload[index++] & 0xFF));
+
+        // 3. Extract A_TA (Target Address - 2 Bytes)
+        A_TA = (short) ((payload[index++] << 8) | (payload[index++] & 0xFF));
+
+        // 4. Extract targetAddressType (Assumes A_TA_Type enum has a fromValue() method)
+        targetAddressType = A_TA_Type.fromValue(payload[index++]);
+
+        // 5. Extract A_AE (if present, assume the first byte defines its length)
+        int aeLength = payload[index++]; // Number of short values in A_AE
+        if (aeLength > 0) {
+            A_AE = new short[aeLength];
+            for (int i = 0; i < aeLength; i++) {
+                A_AE[i] = (short) ((payload[index++] << 8) | (payload[index++] & 0xFF));
+            }
+        }
+
+        // 6. Extract SID (Service ID - 1 Byte)
+        byte SID = payload[index++];
+
+        // 7. Extract SF (Subfunction - 1 Byte)
+        byte SF = payload[index++];
+
+        // 8. Extract A_Data (remaining bytes except last 4 for A_Length)
+        int remainingBytes = payload.length - index - 4; // Excluding last 4 bytes for A_Length
+        byte[] A_Data = null;
+        if (remainingBytes > 0) {
+            A_Data = new byte[remainingBytes];
+            System.arraycopy(payload, index, A_Data, 0, remainingBytes);
+            index += remainingBytes;
+        }
+
+        // 9. Extract A_Length (4 Bytes)
+        int A_Length = ((payload[index++] & 0xFF) << 24) |
+                       ((payload[index++] & 0xFF) << 16) |
+                       ((payload[index++] & 0xFF) << 8) |
+                       (payload[index] & 0xFF);
+
+        // Create and return a new Response object
+        return new Response(messageType, A_SA, A_TA, targetAddressType, A_AE, SID, SF, A_Data, A_Length);
+    }
+
+    /******************************* Debugging Method ****************************/
+    @Override
+    public String toString() {
+        return "Response {" +
+                "messageType=" + messageType +
+                ", A_SA=0x" + Integer.toHexString(A_SA & 0xFFFF) +
+                ", A_TA=0x" + Integer.toHexString(A_TA & 0xFFFF) +
+                ", targetAddressType=" + targetAddressType +
+                ", A_AE=" + Arrays.toString(A_AE) +
+                ", SID=0x" + Integer.toHexString(SID & 0xFF) +
+                ", SF=0x" + Integer.toHexString(SF & 0xFF) +
+                ", A_Data=" + Arrays.toString(A_Data) +
+                ", A_Length=" + A_Length +
+                '}';
+    }
+}

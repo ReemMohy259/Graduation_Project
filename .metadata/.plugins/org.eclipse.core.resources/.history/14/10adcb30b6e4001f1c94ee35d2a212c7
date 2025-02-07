@@ -1,0 +1,153 @@
+package com.diagnostic.core;
+
+/*
+ * This class represents the request packet structure.
+ * This structure follows the ISO 14229-1 standard.
+ * It defines the packet that is expected to be sent from the application
+   layer of the client down to the transport layer.
+ */
+public class Request {
+
+	/******************************* Data-Members ****************************/
+	static A_MType messageType;	    	// Enum
+	static short A_SA;			    	// 2-Bytes
+	static short A_TA;
+	static A_TA_Type targetAddressType;	
+	static short[]   A_AE = null;		// Optional
+
+	private int A_Length;				// Length of the data (excluding the header and length field)
+
+	private byte SID;
+	private byte SF;
+	private boolean suppressPositiveResponse;
+	private byte[]  A_Data = null;
+
+	/******************************** Constructor ****************************/
+	public Request(byte service, byte subFunction, boolean suppressPositiveResponse) {
+		this.SID = service;
+		this.SF = subFunction;
+		this.suppressPositiveResponse = suppressPositiveResponse;
+
+		if (suppressPositiveResponse == true)
+		{
+			SF |= 0x80;
+		}
+		else
+		{
+			SF &= ~0x80;
+		}
+
+		this.A_Data = null;
+
+		this.A_Length = 2;    // SID(1 Byte) + SF(1 Byte)
+	}
+
+	public Request(byte service, byte subFunction, boolean suppressPositiveResponse, byte[] originalData) {
+
+		this(service, subFunction, suppressPositiveResponse);
+		this.A_Data = originalData.clone();
+
+		this.A_Length = 2 + A_Data.length;
+	}
+
+	/******************************* Getters *********************************/
+	public byte getSID(){
+		return SID;
+	}
+
+	public byte getSF(){
+		return SF;
+	}
+
+	public boolean getsuppressPositiveResponse() {
+		return suppressPositiveResponse;
+	}
+
+	public byte[] getData() {
+		return A_Data.clone();
+	}
+
+
+	/******************************* Setters *********************************/
+	public static void setMessageType(A_MType inputType) {
+		messageType = inputType;	
+	}
+
+	public static void setSourceAddress(short inputSA) {
+		A_SA = inputSA;	
+	}
+
+	public static void setTargetAddress(short inputTA) {
+		A_TA = inputTA;	
+	}
+
+	public static void setTargetAddressType(A_TA_Type inputtargetAddressType) {
+		targetAddressType = inputtargetAddressType;	
+	}
+
+	public static void setRemoteAddress(short[] inputRemoteAddress) {
+		A_AE = inputRemoteAddress.clone();	
+	}
+
+	/******************************* Methods *********************************/
+	public byte[] getPayload() {
+
+		// Calculate total payload size
+		int totalLength = 12; 		// messageType(1), A_SA(2), A_TA(2), targetAddressType(1), Length(4), SID(1), SF(1) 
+
+		if (A_AE != null) {
+			totalLength += A_AE.length * 2; 	// A_AE is short[], each short is 2 bytes
+		}
+
+		if (A_Data != null) {
+			totalLength += A_Data.length;
+		}
+
+		// Create the payload array
+		byte[] payload = new byte[totalLength];
+
+		// Index for filling the array
+		int index = 0;
+
+		// Convert and copy messageType (assuming it's an enum with ordinal value)
+		payload[index++] = (byte) messageType.ordinal();
+
+		// Convert and copy A_SA (short -> 2 bytes)
+		payload[index++] = (byte) (A_SA >> 8);
+		payload[index++] = (byte) (A_SA);
+
+		// Convert and copy A_TA (short -> 2 bytes)
+		payload[index++] = (byte) (A_TA >> 8);
+		payload[index++] = (byte) (A_TA);
+
+		// Convert and copy targetAddressType (assuming it's an enum with ordinal value)
+		payload[index++] = (byte) targetAddressType.ordinal();
+
+		// Convert and copy A_AE (if available)
+		if (A_AE != null) {
+			for (short ae : A_AE) {
+				payload[index++] = (byte) (ae >> 8);
+				payload[index++] = (byte) (ae);
+			}
+		}
+
+		// Copy A_Length
+		payload[index++] = (byte) (A_Length >> 24);
+		payload[index++] = (byte) (A_Length >> 16);
+		payload[index++] = (byte) (A_Length >> 8);
+		payload[index++] = (byte) (A_Length);
+
+		// Copy SID
+		payload[index++] = SID;
+
+		// Copy SF
+		payload[index++] = SF;
+
+		// Copy A_Data (if available)
+		if (A_Data != null) {
+			System.arraycopy(A_Data, 0, payload, index, A_Data.length);
+		}
+
+		return payload;
+	}
+}

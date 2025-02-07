@@ -1,0 +1,90 @@
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class LoggerUtility {
+
+    /******************************* Log Levels ****************************/
+    public enum LogLevel {
+        INFO, WARNING, ERROR, DEBUG
+    }
+
+    /******************************* Configuration ****************************/
+    private static final boolean LOG_TO_CONSOLE = true;   // Enable/Disable console logging
+    private static final boolean LOG_TO_FILE = true;      // Enable/Disable file logging
+    private static final String LOG_FILE_PATH = "C:\\Users\\REEM\\Downloads\\logs.txt";  
+    private static final Object lock = new Object();      // Thread-safety lock
+
+    /******************************* Log Method ****************************/
+    public static void log(LogLevel level, String message) {
+        // Ensure timestamp is always in English
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date());
+        String logEntry = "[" + timestamp + "] [" + level + "] " + message;
+
+        // ANSI Colors for Console Output
+        final String RESET = "\u001B[0m";   // Reset color
+        final String RED = "\u001B[31m";    // Red for ERROR
+        final String YELLOW = "\u001B[33m"; // Yellow for WARNING
+        final String BLUE = "\u001B[34m";   // Blue for DEBUG
+
+        // Apply colors for Console
+        if (LOG_TO_CONSOLE) {
+            switch (level) {
+                case ERROR:
+                    System.out.println(RED + logEntry + RESET);
+                    break;
+                case WARNING:
+                    System.out.println(YELLOW + logEntry + RESET);
+                    break;
+                case DEBUG:
+                    System.out.println(BLUE + logEntry + RESET);
+                    break;
+                default:
+                    System.out.println(logEntry); // Default INFO logs
+            }
+        }
+
+        // Apply colors for File Logging
+        if (LOG_TO_FILE) {
+            writeToFile(level, logEntry);
+        }
+    }
+
+    /******************************* File Writing Method ****************************/
+    private static void writeToFile(LogLevel level, String logEntry) {
+        synchronized (lock) {  // Ensures thread safety
+            try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
+                // ANSI color codes for file logs (only if supported)
+                final String RESET = "\u001B[0m";
+                final String RED = "\u001B[31m";  
+                final String YELLOW = "\u001B[33m";  
+                final String BLUE = "\u001B[34m";  
+
+                String coloredLogEntry = logEntry;
+
+                switch (level) {
+                    case ERROR:
+                        coloredLogEntry = RED + logEntry + RESET;
+                        break;
+                    case WARNING:
+                        coloredLogEntry = YELLOW + logEntry + RESET;
+                        break;
+                    case DEBUG:
+                        coloredLogEntry = BLUE + logEntry + RESET;
+                        break;
+                }
+
+                writer.println(coloredLogEntry);
+            } catch (IOException e) {
+                System.err.println("[ERROR] Failed to write log to file: " + e.getMessage());
+            }
+        }
+    }
+
+    /******************************* Shortcut Methods ****************************/
+    public static void info(String message) { log(LogLevel.INFO, message); }
+    public static void warning(String message) { log(LogLevel.WARNING, message); }
+    public static void error(String message) { log(LogLevel.ERROR, message); }
+    public static void debug(String message) { log(LogLevel.DEBUG, message); }
+}

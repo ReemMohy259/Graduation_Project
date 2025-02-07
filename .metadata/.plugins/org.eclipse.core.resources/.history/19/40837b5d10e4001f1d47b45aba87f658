@@ -1,0 +1,75 @@
+package com.diagnostic.core;
+import  com.diagnostic.core.ImportantEnums;
+
+public class Response {
+
+	// Data-Members 
+	private A_MType MessageType;	    // Enum
+	private short A_SA;			        // 2-Bytes
+	private short A_TA;
+	private A_TA_Type TargetAddressType;	
+	private short[]   A_AE = null;		// Optional
+
+	private int A_Length;				// Length of the data (excluding the header and length field)
+
+	private byte ResponseID;
+	private byte SubFunctionEcho;
+	
+	private boolean ResponseStatus;
+	private byte[]  A_Data = null;
+
+
+	// Methods
+	public Response FromPayload(byte[] payload) {
+		// Implementation to reconstruct response from byte payload
+
+	}
+
+	
+	
+	
+	// Getter methods for all fields
+	public BaseService getService() {
+		return service;
+	}
+
+	public byte[] getData() {
+		return data.clone();
+	}
+
+	public int getCode() {
+		return code;
+	}
+
+	public boolean isValid() {
+		return valid;
+	}
+
+	public String getInvalidReason() {
+		return invalidReason;
+	}
+
+	public boolean isPositive() {
+		return positive;
+	}
+
+	public boolean isUnexpected() {
+		return unexpected;
+	}
+
+	public String getCodeName() {
+		return codeName;
+	}
+
+	public Object getServiceData() {
+		return serviceData;
+	}
+
+	public byte[] getOriginalPayload() {
+		return originalPayload.clone();
+	}
+
+	public RequestHandler getOriginalRequest() {
+		return originalRequest;
+	}
+}

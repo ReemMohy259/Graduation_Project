@@ -1,0 +1,148 @@
+package com.diagnostic.core;
+import  com.diagnostic.core.ImportantEnums;
+
+public class RequestHandler {
+
+	// Data-Members 
+	static A_MType MessageType;	    // Enum
+	static short A_SA;			    // 2-Bytes
+	static short A_TA;
+	static A_TA_Type TargetAddressType;	
+	static short[]   A_AE = null;		// Optional
+
+	private int A_Length;				// Length of the data (excluding the header and length field)
+
+	private byte SID;
+	private byte SubFunction;
+	private boolean SuppressPositiveResponse;
+	private byte[]  A_Data = null;
+
+	// Constructor
+	public RequestHandler(byte service, byte SubFunction, boolean SuppressPositiveResponse) {
+		this.SID = service;
+		this.SubFunction = SubFunction;
+		this.SuppressPositiveResponse = SuppressPositiveResponse;
+
+		if (SuppressPositiveResponse == true)
+		{
+			SubFunction |= 0x80;
+		}
+		else
+		{
+			SubFunction &= ~0x80;
+		}
+
+		this.A_Data = null;
+
+		this.A_Length = 2;    // SID(1 Byte) + SF(1 Byte)
+	}
+
+	public RequestHandler(byte service, byte SubFunction, boolean SuppressPositiveResponse, byte[] Original_Data) {
+
+		this(service, SubFunction, SuppressPositiveResponse);
+		this.A_Data = Original_Data.clone();
+
+		this.A_Length = 2 + A_Data.length;
+	}
+
+	// Getters
+	public byte GetService(){
+		return SID;
+	}
+
+	public byte GetSubFunction(){
+		return SubFunction;
+	}
+
+	public boolean GetSuppressPositiveResponse() {
+		return SuppressPositiveResponse;
+	}
+
+	public byte[] GetData() {
+		return A_Data.clone();
+	}
+
+
+	// Setters
+	public static void SetMessageType(A_MType InputType) {
+		MessageType = InputType;	
+	}
+
+	public static void SetSourceAddress(short InputSA) {
+		A_SA = InputSA;	
+	}
+
+	public static void SetTargetAddress(short InputTA) {
+		A_TA = InputTA;	
+	}
+
+	public static void SetTargetAddressType(A_TA_Type InputTargetAddressType) {
+		TargetAddressType = InputTargetAddressType;	
+	}
+
+	public static void SetRemoteAddress(short[] InputRemoteAddress) {
+		A_AE = InputRemoteAddress.clone();	
+	}
+
+	// Methods
+	public byte[] GetPayload() {
+		
+		// Calculate total payload size
+		int totalLength = 12; 		// MessageType(1), A_SA(2), A_TA(2), TargetAddressType(1), Length(4), SID(1), SubFunction(1) 
+
+		if (A_AE != null) {
+			totalLength += A_AE.length * 2; 	// A_AE is short[], each short is 2 bytes
+		}
+
+		if (A_Data != null) {
+			totalLength += A_Data.length;
+		}
+
+		// Create the payload array
+		byte[] payload = new byte[totalLength];
+
+		// Index for filling the array
+		int index = 0;
+
+		// Convert and copy MessageType (assuming it's an enum with ordinal value)
+		payload[index++] = (byte) MessageType.ordinal();
+
+		// Convert and copy A_SA (short -> 2 bytes)
+		payload[index++] = (byte) (A_SA >> 8);
+		payload[index++] = (byte) (A_SA);
+
+		// Convert and copy A_TA (short -> 2 bytes)
+		payload[index++] = (byte) (A_TA >> 8);
+		payload[index++] = (byte) (A_TA);
+
+		// Convert and copy TargetAddressType (assuming it's an enum with ordinal value)
+		payload[index++] = (byte) TargetAddressType.ordinal();
+
+		// Convert and copy A_AE (if available)
+		if (A_AE != null) {
+			for (short ae : A_AE) {
+				payload[index++] = (byte) (ae >> 8);
+				payload[index++] = (byte) (ae);
+			}
+		}
+
+		// Copy A_Length
+	    payload[index++] = (byte) (A_Length >> 24);
+	    payload[index++] = (byte) (A_Length >> 16);
+	    payload[index++] = (byte) (A_Length >> 8);
+	    payload[index++] = (byte) (A_Length);
+		
+		// Copy SID
+		payload[index++] = SID;
+
+		// Copy SubFunction
+		payload[index++] = SubFunction;
+
+		// Copy A_Data (if available)
+		if (A_Data != null) {
+			System.arraycopy(A_Data, 0, payload, index, A_Data.length);
+		}
+		
+		return payload;
+	}
+}

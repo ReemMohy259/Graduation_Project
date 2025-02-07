@@ -1,0 +1,15 @@
+
+
+public enum ImportantEnums {
+
+}
+
+enum A_MType{
+	DIAGNOSTICS ,
+	REMOTE_DIAGNOSTICS ;	
+}
+
+enum A_TA_Type{
+	PHYSICAL ,
+	FUNCTIONAL ;	
+}

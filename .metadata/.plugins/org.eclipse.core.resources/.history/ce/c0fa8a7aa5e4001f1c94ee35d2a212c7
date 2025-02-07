@@ -1,0 +1,70 @@
+package com.diagnostic.core;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class LoggerUtility {
+
+	/******************************* Data-Members ****************************/
+	public enum LogLevel {
+		INFO, WARNING, ERROR, DEBUG
+	}
+
+	private static final boolean LOG_TO_CONSOLE = true;  	// Enable or Disable console logging
+	private static final boolean LOG_TO_FILE = true;     	// Enable or Disable file logging
+	private static final String LOG_FILE_PATH = "C:\\Users\\REEM\\Downloads\\logs.txt";  
+	private static final Object lock = new Object(); // Lock object for thread safety
+
+
+	/********************************** Method ******************************/
+
+	/*
+	 * Logs a message with the given log level.
+	 * Log level (INFO, WARNING, ERROR, DEBUG)
+	 */
+	public static void log(LogLevel level, String message) {
+		// Get the current time in this format and in English
+		String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date());   
+		String logEntry = "[" + timestamp + "] [" + level + "] " + message;
+
+		if (LOG_TO_CONSOLE) {
+			System.out.println(logEntry);
+		}
+
+		if (LOG_TO_FILE) {
+			writeToFile(logEntry);
+		}
+	}
+
+	/*
+	 * Writes log entry to a file in a thread-safe manner.
+	 */
+	private static void writeToFile(String logEntry) {
+		// Ensures thread safety
+		synchronized (lock) { 	
+			try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
+				writer.println(logEntry);
+			} 
+			catch (IOException e) {
+				System.err.println("[ERROR] Failed to write log to file: " + e.getMessage());
+			}
+		}
+	}
+
+	/******************************* Shortcut Methods ****************************/
+	public static void info(String message) { 
+		log(LogLevel.INFO, message); 
+	}
+	public static void warning(String message) { 
+		log(LogLevel.WARNING, message); 
+	}
+	public static void error(String message) { 
+		log(LogLevel.ERROR, message); 
+	}
+	public static void debug(String message) { 
+		log(LogLevel.DEBUG, message); 
+	}
+}

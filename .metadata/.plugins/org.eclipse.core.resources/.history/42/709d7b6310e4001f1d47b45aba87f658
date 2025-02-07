@@ -1,0 +1,241 @@
+package com.diagnostic.core;
+import  com.diagnostic.core.ImportantEnums;
+
+
+public class Response2 {
+	private static final int POSITIVE_RESPONSE_MASK = 0x40;
+	private static final int NEGATIVE_RESPONSE_SID = 0x7F;
+
+	// Data-Members 
+	private A_MType MessageType;	    // Enum
+	private short A_SA;			        // 2-Bytes
+	private short A_TA;
+	private A_TA_Type TargetAddressType;	
+	private short[]   A_AE = null;		// Optional
+
+	private int A_Length;				// Length of the data (excluding the header and length field)
+
+	private byte ResponseID;
+	private byte SubFunctionEcho;
+
+	private boolean ResponseStatus;
+	private byte[]  A_Data = null;
+
+
+
+
+	private final BaseService service;
+	private final int code;
+	private final byte[] data;
+	private final boolean valid;
+	private final String invalidReason;
+	private final boolean positive;
+	private final boolean unexpected;
+	private final String codeName;
+	private final Object serviceData;
+	private final byte[] originalPayload;
+	private final RequestHandler originalRequest;
+
+	/**
+	 * UDS Negative Response Codes as per ISO 14229-1
+	 */
+	public static class NRC {
+		public static final int GENERAL_REJECT = 0x10;
+		public static final int SERVICE_NOT_SUPPORTED = 0x11;
+		public static final int SUB_FUNCTION_NOT_SUPPORTED = 0x12;
+		public static final int INCORRECT_MESSAGE_LENGTH_OR_INVALID_FORMAT = 0x13;
+		public static final int RESPONSE_TOO_LONG = 0x14;
+		public static final int BUSY_REPEAT_REQUEST = 0x21;
+		public static final int CONDITIONS_NOT_CORRECT = 0x22;
+		public static final int REQUEST_SEQUENCE_ERROR = 0x24;
+		public static final int REQUEST_OUT_OF_RANGE = 0x31;
+		public static final int SECURITY_ACCESS_DENIED = 0x33;
+		public static final int INVALID_KEY = 0x35;
+		public static final int EXCEED_NUMBER_OF_ATTEMPTS = 0x36;
+		public static final int REQUIRED_TIME_DELAY_NOT_EXPIRED = 0x37;
+		public static final int UPLOAD_DOWNLOAD_NOT_ACCEPTED = 0x70;
+		public static final int TRANSFER_DATA_SUSPENDED = 0x71;
+		public static final int GENERAL_PROGRAMMING_FAILURE = 0x72;
+		public static final int WRONG_BLOCK_SEQUENCE_COUNTER = 0x73;
+		public static final int SUB_FUNCTION_NOT_SUPPORTED_IN_ACTIVE_SESSION = 0x7E;
+		public static final int SERVICE_NOT_SUPPORTED_IN_ACTIVE_SESSION = 0x7F;
+	}
+
+	private Response(Builder builder) {
+		this.service = builder.service;
+		this.code = builder.code;
+		this.data = builder.data.clone();
+		this.valid = builder.valid;
+		this.invalidReason = builder.invalidReason;
+		this.positive = builder.positive;
+		this.unexpected = builder.unexpected;
+		this.codeName = builder.codeName;
+		this.serviceData = builder.serviceData;
+		this.originalPayload = builder.originalPayload.clone();
+		this.originalRequest = builder.originalRequest;
+	}
+
+	public static class Builder {
+		private final BaseService service;
+		private final int code;
+		private byte[] data = new byte[0];
+		private boolean valid = true;
+		private String invalidReason = "";
+		private boolean positive;
+		private boolean unexpected = false;
+		private String codeName = "";
+		private Object serviceData = null;
+		private byte[] originalPayload = new byte[0];
+		private RequestHandler originalRequest = null;
+
+		public Builder(BaseService service, int code) {
+			this.service = service;
+			this.code = code;
+			this.positive = isPositiveResponse(code);
+		}
+
+		public Builder data(byte[] data) {
+			this.data = data.clone();
+			return this;
+		}
+
+		public Builder originalRequest(RequestHandler request) {
+			this.originalRequest = request;
+			return this;
+		}
+
+		public Builder originalPayload(byte[] payload) {
+			this.originalPayload = payload.clone();
+			return this;
+		}
+
+		public Builder serviceData(Object data) {
+			this.serviceData = data;
+			return this;
+		}
+
+		public Builder invalid(String reason) {
+			this.valid = false;
+			this.invalidReason = reason;
+			return this;
+		}
+
+		public Builder unexpected(boolean unexpected) {
+			this.unexpected = unexpected;
+			return this;
+		}
+
+		public Builder codeName(String name) {
+			this.codeName = name;
+			return this;
+		}
+
+		public Response build() {
+			return new Response(this);
+		}
+	}
+
+	/**
+	 * Creates a response object from a raw UDS payload
+	 * @param payload The raw UDS response payload
+	 * @return Response object
+	 */
+	public static Response fromPayload(byte[] payload) {
+		if (payload == null || payload.length < 1) {
+			return new Builder(null, 0)
+					.invalid("Invalid payload length")
+					.build();
+		}
+
+		int sid = payload[0] & 0xFF;
+		boolean isNegative = (sid == NEGATIVE_RESPONSE_SID);
+
+		// Check minimum length for negative/positive responses
+		if ((isNegative && payload.length < 3) || (!isNegative && payload.length < 1)) {
+			return new Builder(null, sid)
+					.invalid("Invalid payload length for response type")
+					.build();
+		}
+
+		// Extract data based on response type
+		byte[] responseData;
+		if (isNegative) {
+			// Negative response format: [7F] [Request SID] [NRC] [Additional Data...]
+			responseData = new byte[payload.length - 3];
+			System.arraycopy(payload, 3, responseData, 0, responseData.length);
+		} else {
+			// Positive response format: [SID + 40] [Data...]
+			responseData = new byte[payload.length - 1];
+			System.arraycopy(payload, 1, responseData, 0, responseData.length);
+		}
+
+		return new Builder(null, sid)
+				.data(responseData)
+				.originalPayload(payload)
+				.codeName(getCodeName(sid, isNegative))
+				.build();
+	}
+
+	/**
+	 * Converts the response to a UDS payload
+	 * @return byte array containing the UDS response
+	 */
+	public byte[] getPayload() {
+		byte[] payload;
+		if (!positive) {
+			// Negative response format
+			payload = new byte[data.length + 3];
+			payload[0] = (byte)NEGATIVE_RESPONSE_SID;
+			payload[1] = (byte)(originalRequest != null ? originalRequest.getSubfunction() : 0);
+			payload[2] = (byte)code;
+			System.arraycopy(data, 0, payload, 3, data.length);
+		} else {
+			// Positive response format
+			payload = new byte[data.length + 1];
+			payload[0] = (byte)code;
+			System.arraycopy(data, 0, payload, 1, data.length);
+		}
+		return payload;
+	}
+
+	private static boolean isPositiveResponse(int code) {
+		return code != NEGATIVE_RESPONSE_SID && (code & POSITIVE_RESPONSE_MASK) != 0;
+	}
+
+	private static String getCodeName(int code, boolean isNegative) {
+		if (isNegative) {
+			// Return NRC name if it's a known negative response code
+			switch (code) {
+			case NRC.GENERAL_REJECT: return "generalReject";
+			case NRC.SERVICE_NOT_SUPPORTED: return "serviceNotSupported";
+			case NRC.SECURITY_ACCESS_DENIED: return "securityAccessDenied";
+			case NRC.INVALID_KEY: return "invalidKey";
+			// Add other NRC codes as needed
+			default: return "unknownNRC";
+			}
+		} else {
+			// Return service name for positive responses
+			switch (code & ~POSITIVE_RESPONSE_MASK) {
+			case 0x10: return "diagnosticSessionControl";
+			case 0x11: return "ecuReset";
+			case 0x27: return "securityAccess";
+			case 0x3E: return "testerPresent";
+			// Add other service IDs as needed
+			default: return "unknownService";
+			}
+		}
+	}
+
+	// Getters
+	public BaseService getService() { return service; }
+	public int getCode() { return code; }
+	public byte[] getData() { return data.clone(); }
+	public boolean isValid() { return valid; }
+	public String getInvalidReason() { return invalidReason; }
+	public boolean isPositive() { return positive; }
+	public boolean isUnexpected() { return unexpected; }
+	public String getCodeName() { return codeName; }
+	public Object getServiceData() { return serviceData; }
+	public byte[] getOriginalPayload() { return originalPayload.clone(); }
+	public RequestHandler getOriginalRequest() { return originalRequest; }
+}

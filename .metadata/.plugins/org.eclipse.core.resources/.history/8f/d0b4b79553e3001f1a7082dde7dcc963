@@ -1,0 +1,6 @@
+package com.diagnostic.core;
+
+public enum Enum {
+	DIAGNOSTICS ,
+	REMOTE_DIAGNOSTICS;	
+}

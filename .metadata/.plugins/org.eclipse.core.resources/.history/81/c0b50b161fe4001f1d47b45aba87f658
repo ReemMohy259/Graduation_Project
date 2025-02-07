@@ -1,0 +1,63 @@
+package com.diagnostic.core;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class LoggerUtility {
+
+    /******************************* Log Levels ****************************/
+    public enum LogLevel {
+        INFO, WARNING, ERROR, DEBUG
+    }
+
+    /******************************* Configuration ****************************/
+    private static final boolean LOG_TO_CONSOLE = true;  // Enable/Disable console logging
+    private static final boolean LOG_TO_FILE = true;     // Enable/Disable file logging
+    private static final String LOG_FILE_PATH = "logs.txt";  // Log file location
+    private static final Object lock = new Object(); // Lock object for thread safety
+
+    /******************************* Log Method ****************************/
+    /**
+     * Logs a message with the given log level.
+     *
+     * @param level   Log level (INFO, WARNING, ERROR, DEBUG)
+     * @param message Log message
+     */
+    public static void log(LogLevel level, String message) {
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String logEntry = "[" + timestamp + "] [" + level + "] " + message;
+
+        if (LOG_TO_CONSOLE) {
+            System.out.println(logEntry);
+        }
+
+        if (LOG_TO_FILE) {
+            writeToFile(logEntry);
+        }
+    }
+
+    /******************************* File Writing Method ****************************/
+    /**
+     * Writes log entry to a file in a thread-safe manner.
+     *
+     * @param logEntry The log entry to write.
+     */
+    private static void writeToFile(String logEntry) {
+        synchronized (lock) { // Ensures thread safety
+            try (PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
+                writer.println(logEntry);
+            } catch (IOException e) {
+                System.err.println("[ERROR] Failed to write log to file: " + e.getMessage());
+            }
+        }
+    }
+
+    /******************************* Shortcut Methods ****************************/
+    public static void info(String message) { log(LogLevel.INFO, message); }
+    public static void warning(String message) { log(LogLevel.WARNING, message); }
+    public static void error(String message) { log(LogLevel.ERROR, message); }
+    public static void debug(String message) { log(LogLevel.DEBUG, message); }
+}
+

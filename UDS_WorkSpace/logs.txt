@@ -1,0 +1,19 @@
+[2025-02-07 04:38:05] [ERROR] INCORRECT PAYLOAD (null or Invalid payload length)
+
+[2025-02-07 04:40:48] [ERROR] INCORRECT PAYLOAD (null or Invalid payload length)
+
+[2025-02-07 04:41:07] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= DIAGNOSTIC_SESSION_CONTROL, SF=0x01, suppressPositiveResponse=false, A_Data=None, A_Length=2 }
+[2025-02-07 04:41:07] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= ECU_RESET, SF=0x82, suppressPositiveResponse=true, A_Data=[0x11, 0x22, 0x33, 0x44], A_Length=6 }
+[2025-02-07 04:41:07] [WARNING] A_AE only supported for REMOTE_DIAGNOSTICS A_MType
+
+[2025-02-07 04:41:07] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= READ_DATA_BY_IDENTIFIER, SF=0x03, suppressPositiveResponse=false, A_Data=None, A_Length=2 }
+[2025-02-07 04:58:53] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= DIAGNOSTIC_SESSION_CONTROL, SF=0x01, suppressPositiveResponse=false, A_Data=None, A_Length=2 }
+[2025-02-07 04:58:53] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= ECU_RESET, SF=0x82, suppressPositiveResponse=true, A_Data=[0x11, 0x22, 0x33, 0x44], A_Length=6 }
+[2025-02-07 04:58:53] [WARNING] A_AE only supported for REMOTE_DIAGNOSTICS A_MType
+
+[2025-02-07 04:58:53] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= READ_DATA_BY_IDENTIFIER, SF=0x03, suppressPositiveResponse=false, A_Data=None, A_Length=2 }
+[2025-02-07 04:59:07] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= DIAGNOSTIC_SESSION_CONTROL, SF=0x01, suppressPositiveResponse=false, A_Data=None, A_Length=2 }
+[2025-02-07 04:59:07] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= ECU_RESET, SF=0x82, suppressPositiveResponse=true, A_Data=[0x11, 0x22, 0x33, 0x44], A_Length=6 }
+[2025-02-07 04:59:07] [WARNING] A_AE only supported for REMOTE_DIAGNOSTICS A_MType
+
+[2025-02-07 04:59:07] [INFO] Request { messageType=DIAGNOSTICS, A_SA=0x1234, A_TA=0x5678, targetAddressType=PHYSICAL, A_AE=None, SID= READ_DATA_BY_IDENTIFIER, SF=0x03, suppressPositiveResponse=false, A_Data=None, A_Length=2 }

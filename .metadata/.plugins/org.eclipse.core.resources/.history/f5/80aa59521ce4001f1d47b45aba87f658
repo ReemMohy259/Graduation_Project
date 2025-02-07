@@ -1,0 +1,106 @@
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class LoggerUtility {
+
+    /******************************* Log Levels ****************************/
+    public enum LogLevel {
+        INFO, WARNING, ERROR, DEBUG
+    }
+
+    /******************************* Configuration ****************************/
+    private static final boolean LOG_TO_CONSOLE = true;  // Enable/Disable console logging
+    private static final boolean LOG_TO_FILE = true;     // Enable/Disable file logging
+    private static final String LOG_FILE_PATH = "C:\\Users\\REEM\\Downloads\\logs.txt";  // Log file location
+    private static final Object lock = new Object(); // Lock object for thread safety
+
+    /******************************* Log Method ****************************/
+    /**
+     * Logs a message with the given log level.
+     *
+     * @param level   Log level (INFO, WARNING, ERROR, DEBUG)
+     * @param message Log message
+     */
+    public static void log(LogLevel level, String message) {
+        // Ensure timestamp is always in English
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date());
+        String logEntry = "[" + timestamp + "] [" + level + "] " + message;
+
+        // Define ANSI color codes
+        final String RESET = "\u001B[0m";   // Resets text color to default
+        final String RED = "\u001B[31m";    // Red color for ERROR messages
+        final String YELLOW = "\u001B[33m"; // Yellow color for WARNING messages
+        final String BLUE = "\u001B[34m";   // Blue color for DEBUG messages
+
+        // Apply color based on log level
+        if (LOG_TO_CONSOLE) {
+            switch (level) {
+                case ERROR:
+                    System.out.println(RED + logEntry + RESET);
+                    break;
+                case WARNING:
+                    System.out.println(YELLOW + logEntry + RESET);
+                    break;
+                case DEBUG:
+                    System.out.println(BLUE + logEntry + RESET);
+                    break;
+                default:
+                    System.out.println(logEntry); // Default color for INFO
+            }
+        }
+
+        if (LOG_TO_FILE) {
+            writeToFile(logEntry,level);
+        }
+    }
+
+
+
+    /******************************* File Writing Method ****************************/
+    /**
+     * Writes log entry to a file in a thread-safe manner.
+     *
+     * @param logEntry The log entry to write.
+     */
+    private static void writeToFile(String logEntry, LogLevel level) {
+        synchronized (lock) {
+            final String RESET = "\u001B[0m";
+            final String RED = "\u001B[31m";
+            final String YELLOW = "\u001B[33m";
+            final String BLUE = "\u001B[34m";
+
+            // Add ANSI color codes
+            String coloredLogEntry = logEntry;
+            switch (level) {
+                case ERROR:
+                    coloredLogEntry = RED + logEntry + RESET;
+                    break;
+                case WARNING:
+                    coloredLogEntry = YELLOW + logEntry + RESET;
+                    break;
+                case DEBUG:
+                    coloredLogEntry = BLUE + logEntry + RESET;
+                    break;
+            }
+
+            try (PrintWriter writer = new PrintWriter(new FileWriter("logs_ansi.log", true))) {
+                writer.println(coloredLogEntry);
+            } catch (IOException e) {
+                System.err.println("[ERROR] Failed to write log to file: " + e.getMessage());
+            }
+        }
+    }
+
+
+    /******************************* Shortcut Methods ****************************/
+    public static void info(String message) { log(LogLevel.INFO, message); }
+    public static void warning(String message) { log(LogLevel.WARNING, message); }
+    public static void error(String message) { log(LogLevel.ERROR, message); }
+    public static void debug(String message) { log(LogLevel.DEBUG, message); }
+}
+
